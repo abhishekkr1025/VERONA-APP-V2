@@ -309,16 +309,16 @@ export default function JewelryScene({
     );
 
     // --- TOUCH INTERACTION (Only affects floating diamonds) ---
-    const handleTouchStart = (e: TouchEvent) => {
+ const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
+        e.preventDefault();
         touchStartRef.current = {
           x: e.touches[0].clientX,
           y: e.touches[0].clientY,
         };
       }
     };
-
-  const handleTouchMove = (e: TouchEvent) => {
+ const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1 && floatingGroupRef.current) {
         e.preventDefault();
         e.stopPropagation();
@@ -487,7 +487,7 @@ export default function JewelryScene({
         top: 0,
         background: "transparent",
         overflow: "hidden",
-        touchAction: "none",
+        touchAction: "pan-y",
         cursor: "grab",
       }}
     />
