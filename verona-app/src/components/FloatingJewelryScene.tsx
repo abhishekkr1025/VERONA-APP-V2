@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
@@ -225,7 +225,7 @@ export default function FloatingJewelryScene({ modelPath = "/ring-glb.glb", envP
         clockRef.current = new THREE.Clock();
 
         const animate = () => {
-            const delta = clockRef.current!.getDelta();
+            // const delta = clockRef.current!.getDelta();
             const time = performance.now() * 0.001;
 
 

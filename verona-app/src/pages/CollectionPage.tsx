@@ -1,6 +1,6 @@
 import Navbar from "../components/Navbar";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -9,10 +9,10 @@ export default function CollectionPage() {
   const [priceRange, setPriceRange] = useState("all");
   const [sortBy, setSortBy] = useState("featured");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
-  const [cartCount, setCartCount] = useState(0);
+  // const [cartCount, setCartCount] = useState(0);
   
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { category } = useParams();
   // Product data
@@ -131,9 +131,9 @@ export default function CollectionPage() {
     return 0; // featured
   });
 
-  const addToCart = (productId: number) => {
-    setCartCount(cartCount + 1);
-  };
+  // const addToCart = (productId: number) => {
+  //   setCartCount(cartCount + 1);
+  // };
 
 
   useEffect(() => {
@@ -297,7 +297,7 @@ export default function CollectionPage() {
                     {/* Quick Add Button */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <button
-                        onClick={() => addToCart(product.id)}
+                        // onClick={() => addToCart(product.id)}
                         className="px-6 py-3 bg-white text-black text-sm tracking-wider rounded-full hover:bg-gray-200 transition transform translate-y-4 group-hover:translate-y-0"
                       >
                         ADD TO CART
@@ -360,7 +360,7 @@ export default function CollectionPage() {
                         ${product.price.toLocaleString()}
                       </p>
                       <button
-                        onClick={() => addToCart(product.id)}
+                        // onClick={() => addToCart(product.id)}
                         className="px-8 py-3 border border-white/30 rounded-full hover:bg-white hover:text-black transition-all duration-300 text-sm tracking-wider"
                       >
                         ADD TO CART
