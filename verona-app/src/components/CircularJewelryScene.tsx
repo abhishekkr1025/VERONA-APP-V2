@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import  { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+// import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 export default function CircularJewelryScene({ modelPath = "/ring-glb.glb", envPath = "/venice.hdr" }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -19,7 +19,6 @@ export default function CircularJewelryScene({ modelPath = "/ring-glb.glb", envP
   const isDraggingRef = useRef(false);
   const previousMouseX = useRef(0);
   const rotationVelocity = useRef(0);
-  const autoRotate = useRef(true);
 
   useEffect(() => {
     const container = containerRef.current;

@@ -13,10 +13,10 @@ const useAuth = () => ({
 import JewelryScene from "../components/JewelryScene";
 import CircularJewelryScene from "../components/CircularJewelryScene";
 import SpiralJewelryScene from "../components/SpiralJewelryScene";
-import FloatingJewelryScene from "../components/FloatingJewelryScene";
-import SpreadingJewelryScene from "../components/SpreadingJewelryScene";
-import FloatingDiamonds from "../components/FloatingDiamonds";
-import MergedJewelryScene from "../components/MergedJewelryScene";
+// import FloatingJewelryScene from "../components/FloatingJewelryScene";
+// import SpreadingJewelryScene from "../components/SpreadingJewelryScene";
+// import FloatingDiamonds from "../components/FloatingDiamonds";
+// import MergedJewelryScene from "../components/MergedJewelryScene";
 import Navbar from "../components/Navbar";
 
 

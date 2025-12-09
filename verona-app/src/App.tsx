@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import React from "react";
+// import React from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 
-import GradientBackgroundPage from "./pages/GradientBackgroundPage";
+// import GradientBackgroundPage from "./pages/GradientBackgroundPage";
 import AboutPage from "./pages/AboutPage";
 import ShopPage from "./pages/ShopPage";
 import ContactPage from "./pages/ContactPage";
@@ -22,7 +22,7 @@ function AppRouter() {
 
 
       
-      <Route path="/gradient" element={<GradientBackgroundPage />} />
+      {/* <Route path="/gradient" element={<GradientBackgroundPage />} /> */}
 
       {/* Collections route */}
       <Route path="/collections" element={<CollectionPage />} />
