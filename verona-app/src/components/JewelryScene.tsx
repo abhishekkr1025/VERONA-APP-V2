@@ -318,9 +318,10 @@ export default function JewelryScene({
       }
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+  const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1 && floatingGroupRef.current) {
         e.preventDefault();
+        e.stopPropagation();
         const deltaX = e.touches[0].clientX - touchStartRef.current.x;
         const deltaY = e.touches[0].clientY - touchStartRef.current.y;
 
