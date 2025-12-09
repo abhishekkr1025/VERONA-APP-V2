@@ -1,405 +1,7 @@
-// import React, { useEffect, useRef } from "react";
-// import * as THREE from "three";
-// import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-// import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
-
-// type JewelrySceneProps = {
-//   modelPath?: string;
-//   sloganPath?: string;
-//   floatingModels?: string[];
-//   envPath?: string;
-//   floatingCount?: number;
-// };
-
-// export default function JewelryScene({
-//   modelPath = "/VERONA.glb",
-//   sloganPath = "/SLOGAN.glb",
-//   floatingModels = [
-//     "/2.glb",
-//     "/3.glb",
-//     "/4.glb",
-//     "/5.glb",
-//     "/6.glb",
-//     "/7.glb",
-//     "/8.glb",
-//     "/9.glb",
-//     "/10.glb",
-//     "/11.glb",
-//     "/12.glb",
-//     "/13.glb",
-//     "/14.glb",
-//     "/15.glb",
-//     "/16.glb",
-//     "/17.glb",
-//     "/18.glb",
-//   ],
-//   envPath = "/venice.hdr",
-//   floatingCount = 11,
-// }: JewelrySceneProps) {
-//   const containerRef = useRef<HTMLDivElement | null>(null);
-
-//   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-//   const sceneRef = useRef<THREE.Scene | null>(null);
-//   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-
-//   const mainGroupRef = useRef<THREE.Group | null>(null);
-//   const floatingGroupRef = useRef<THREE.Group | null>(null);
-
-//   const envMapRef = useRef<THREE.Texture | null>(null);
-//   const diamondMaterialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
-
-//   const animationIdRef = useRef<number | null>(null);
-//   const clockRef = useRef(new THREE.Clock());
-
-//   useEffect(() => {
-//     const container = containerRef.current;
-//     if (!container) return;
-
-//     // --- SCENE & CAMERA ---
-//     const scene = new THREE.Scene();
-//     scene.background = null;
-//     sceneRef.current = scene;
-
-//     const width = container.clientWidth;
-//     const height = container.clientHeight;
-
-//     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
-//     camera.position.set(0, 0.5, 2.5);
-//     cameraRef.current = camera;
-
-//     // --- RENDERER ---
-//     const renderer = new THREE.WebGLRenderer({
-//       antialias: true,
-//       alpha: true,
-//     });
-//     renderer.setSize(width, height);
-//     // Clamp DPR a bit lower to avoid overdraw on hi-DPI displays
-//     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
-//     renderer.outputColorSpace = THREE.SRGBColorSpace;
-//     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-//     renderer.toneMappingExposure = 1.1;
-//     renderer.setClearColor(0x000000, 0);
-//     renderer.shadowMap.enabled = true;
-//     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-//     container.appendChild(renderer.domElement);
-//     rendererRef.current = renderer;
-
-//     // --- LIGHTS ---
-//     const hemi = new THREE.HemisphereLight(0xffffff, 0x202020, 0.6);
-//     scene.add(hemi);
-
-//     const spot = new THREE.SpotLight(0xffffff, 4);
-//     spot.position.set(4, 6, 3);
-//     spot.castShadow = true;
-//     spot.angle = Math.PI / 6;
-//     spot.penumbra = 0.3;
-//     scene.add(spot);
-
-//     const fill = new THREE.DirectionalLight(0xffffff, 1.1);
-//     fill.position.set(-3, 2, 2);
-//     scene.add(fill);
-
-//     const rimLight1 = new THREE.PointLight(0x4af2ff, 1.8, 10);
-//     rimLight1.position.set(2, 1, -2);
-//     scene.add(rimLight1);
-
-//     const rimLight2 = new THREE.PointLight(0xffa6f9, 1.4, 10);
-//     rimLight2.position.set(-2, 1, 2);
-//     scene.add(rimLight2);
-
-//     // --- GROUPS ---
-//     const mainGroup = new THREE.Group();
-//     scene.add(mainGroup);
-//     mainGroupRef.current = mainGroup;
-
-//     const floatingGroup = new THREE.Group();
-//     scene.add(floatingGroup);
-//     floatingGroupRef.current = floatingGroup;
-
-//     // --- LOADERS & ENV MAP ---
-//     const loader = new GLTFLoader();
-//     const rgbeLoader = new HDRLoader();
-//     const pmremGen = new THREE.PMREMGenerator(renderer);
-//     pmremGen.compileEquirectangularShader();
-
-//     rgbeLoader.load(
-//       envPath,
-//       (hdr) => {
-//         const envMap = pmremGen.fromEquirectangular(hdr).texture;
-//         hdr.dispose();
-//         scene.environment = envMap;
-//         envMapRef.current = envMap;
-
-//         // Shared diamond material (one instance for all meshes)
-//         const diamondMat = new THREE.MeshPhysicalMaterial({
-//           metalness: 0,
-//           roughness: 0,
-//           transmission: 1,
-//           ior: 2.45,
-//           thickness: 2,
-//           dispersion: 0.05,
-//           attenuationDistance: 0.6,
-//           attenuationColor: new THREE.Color("#000000"),
-//           clearcoat: 1,
-//           clearcoatRoughness: 0,
-//           specularIntensity: 2.2,
-//           specularColor: new THREE.Color("#000000"),
-//           iridescence: 1,
-//           iridescenceIOR: 2.0,
-//           iridescenceThicknessRange: [200, 1200],
-//           envMap,
-//           envMapIntensity: 4.5,
-//           color: new THREE.Color("white"),
-//           side: THREE.DoubleSide,
-//           transparent: true,
-//         });
-//         diamondMaterialRef.current = diamondMat;
-
-//         // Helper to apply the diamond material
-//         const applyDiamondMaterial = (root: THREE.Object3D, withShadows: boolean) => {
-//           root.traverse((child) => {
-//             if (child instanceof THREE.Mesh) {
-//               child.material = diamondMat;
-//               child.castShadow = withShadows;
-//               child.receiveShadow = withShadows;
-//               child.frustumCulled = true;
-//             }
-//           });
-//         };
-
-//         // --- LOAD SLOGAN MODEL ---
-//         loader.load(
-//           sloganPath,
-//           (gltf) => {
-//             const model = gltf.scene;
-
-//             model.position.set(0, 0, 0);
-//             model.rotation.set(0, 0, 0);
-
-//             const box = new THREE.Box3().setFromObject(model);
-//             const size = box.getSize(new THREE.Vector3());
-//             const maxDim = Math.max(size.x, size.y, size.z) || 1;
-//             const scaleFactor = 0.94 / maxDim;
-//             model.scale.setScalar(scaleFactor);
-
-//             box.setFromObject(model);
-//             const center = box.getCenter(new THREE.Vector3());
-
-//             model.position.x -= center.x;
-//             model.position.y -= center.y + 0.05;
-//             model.position.z -= center.z;
-
-//             model.rotation.x = Math.PI / 2;
-
-//             applyDiamondMaterial(model, true);
-//             mainGroup.add(model);
-//           },
-//           undefined,
-//           (err) => console.error("Error loading slogan model", err)
-//         );
-
-//         // --- LOAD MAIN JEWELRY MODEL ---
-//         loader.load(
-//           modelPath,
-//           (gltf) => {
-//             const model = gltf.scene;
-
-//             model.position.set(0, 0, 0);
-//             model.rotation.set(0, 0, 0);
-
-//             const box = new THREE.Box3().setFromObject(model);
-//             const size = box.getSize(new THREE.Vector3());
-//             const maxDim = Math.max(size.x, size.y, size.z) || 1;
-//             const scaleFactor = 0.94 / maxDim;
-//             model.scale.setScalar(scaleFactor);
-
-//             box.setFromObject(model);
-//             const center = box.getCenter(new THREE.Vector3());
-
-//             model.position.x -= center.x;
-//             model.position.y -= center.y + 0.05;
-//             model.position.z -= center.z;
-
-//             model.rotation.x = Math.PI / 2;
-
-//             applyDiamondMaterial(model, true);
-//             mainGroup.add(model);
-//           },
-//           undefined,
-//           (err) => console.error("Error loading main model", err)
-//         );
-
-//         // --- LOAD FLOATING DIAMONDS ---
-//         const count = Math.min(floatingCount, floatingModels.length);
-
-//         for (let i = 0; i < count; i++) {
-//           const randomModel =
-//             floatingModels[Math.floor(Math.random() * floatingModels.length)];
-
-//           loader.load(
-//             randomModel,
-//             (gltf) => {
-//               const model = gltf.scene;
-
-//               // Normalize size
-//               const box = new THREE.Box3().setFromObject(model);
-//               const size = box.getSize(new THREE.Vector3());
-//               const maxDim = Math.max(size.x, size.y, size.z) || 1;
-//               const targetSize = THREE.MathUtils.randFloat(0.08, 0.16);
-//               const scaleFactor = targetSize / maxDim;
-//               model.scale.setScalar(scaleFactor);
-
-//               // Position in a ring around center
-//               const angle = (i / count) * Math.PI * 2;
-//               const radius = 1.4 + Math.random() * 0.3;
-
-//               const baseY = THREE.MathUtils.randFloat(-0.2, 0.7);
-//               const baseZ = Math.sin(angle) * radius * 0.5;
-
-//               model.position.set(
-//                 Math.cos(angle) * radius,
-//                 baseY,
-//                 baseZ
-//               );
-
-//               // Store some data for animation
-//               (model as any)._floatBaseY = baseY;
-//               (model as any)._floatSpeed = THREE.MathUtils.randFloat(0.5, 1.1);
-//               (model as any)._floatAmp = THREE.MathUtils.randFloat(0.04, 0.09);
-//               (model as any)._rotSpeedX = THREE.MathUtils.randFloat(0.2, 0.5);
-//               (model as any)._rotSpeedY = THREE.MathUtils.randFloat(0.3, 0.6);
-//               (model as any)._phase = Math.random() * Math.PI * 2;
-
-//               // lighter: no shadows for small floating pieces
-//               applyDiamondMaterial(model, false);
-
-//               floatingGroup.add(model);
-//             },
-//             undefined,
-//             (err) => console.error("Error loading floating model", err)
-//           );
-//         }
-//       },
-//       undefined,
-//       (err) => console.error("Error loading HDR env", err)
-//     );
-
-//     // --- ANIMATION LOOP ---
-//     const animate = () => {
-//       const delta = clockRef.current.getDelta();
-//       const elapsed = clockRef.current.elapsedTime;
-
-//       const fg = floatingGroupRef.current;
-//       if (fg) {
-//         for (let i = 0; i < fg.children.length; i++) {
-//           const child = fg.children[i] as any;
-//           if (child._floatBaseY !== undefined) {
-//             const t = elapsed * child._floatSpeed + child._phase;
-//             child.position.y = child._floatBaseY + Math.sin(t) * child._floatAmp;
-//             child.rotation.x += child._rotSpeedX * delta;
-//             child.rotation.y += child._rotSpeedY * delta;
-//           }
-//         }
-//       }
-
-//       if (rendererRef.current && sceneRef.current && cameraRef.current) {
-//         rendererRef.current.render(sceneRef.current, cameraRef.current);
-//       }
-
-//       animationIdRef.current = requestAnimationFrame(animate);
-//     };
-
-//     animationIdRef.current = requestAnimationFrame(animate);
-
-//     // --- RESIZE HANDLER ---
-//     const handleResize = () => {
-//       if (!containerRef.current || !rendererRef.current || !cameraRef.current) return;
-
-//       const w = containerRef.current.clientWidth;
-//       const h = containerRef.current.clientHeight;
-
-//       rendererRef.current.setSize(w, h);
-//       cameraRef.current.aspect = w / h;
-//       cameraRef.current.updateProjectionMatrix();
-//     };
-
-//     window.addEventListener("resize", handleResize);
-
-//     // --- CLEANUP ---
-//     return () => {
-//       window.removeEventListener("resize", handleResize);
-
-//       if (animationIdRef.current !== null) {
-//         cancelAnimationFrame(animationIdRef.current);
-//       }
-
-//       if (sceneRef.current) {
-//         sceneRef.current.traverse((obj) => {
-//           const mesh = obj as THREE.Mesh;
-//           if (mesh.isMesh) {
-//             if (mesh.geometry) mesh.geometry.dispose();
-//             if (Array.isArray(mesh.material)) {
-//               mesh.material.forEach((m) => m.dispose());
-//             } else if (mesh.material) {
-//               mesh.material.dispose();
-//             }
-//           }
-//         });
-//       }
-
-//       if (diamondMaterialRef.current) {
-//         diamondMaterialRef.current.dispose();
-//       }
-
-//       if (envMapRef.current) {
-//         envMapRef.current.dispose();
-//       }
-
-//       pmremGen.dispose();
-
-//       if (rendererRef.current) {
-//         rendererRef.current.dispose();
-//         if (rendererRef.current.domElement.parentNode) {
-//           rendererRef.current.domElement.parentNode.removeChild(
-//             rendererRef.current.domElement
-//           );
-//         }
-//       }
-
-//       sceneRef.current = null;
-//       cameraRef.current = null;
-//       rendererRef.current = null;
-//     };
-//   }, [modelPath, sloganPath, envPath, floatingModels, floatingCount]);
-
-//   return (
-//     <div
-//       ref={containerRef}
-//       style={{
-//         width: "100%",
-//         height: "100vh",
-//         position: "sticky",
-//         top: 0,
-//         background: "transparent",
-//         overflow: "hidden",
-//       }}
-//     />
-//   );
-// }
-
-
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
-
-// import {
-//   GLTFLoader,
-//   RGBELoader,
-//   OrbitControls,
-//   EffectComposer,
-//   RenderPass,
-// } from "three-stdlib";
 
 type JewelrySceneProps = {
   modelPath?: string;
@@ -450,7 +52,7 @@ export default function JewelryScene({
   const animationIdRef = useRef<number | null>(null);
   const clockRef = useRef(new THREE.Clock());
 
-  // Touch interaction refs
+  // Touch interaction refs - only for floating diamonds
   const touchStartRef = useRef({ x: 0, y: 0 });
   const rotationRef = useRef({ x: 0, y: 0 });
   const targetRotationRef = useRef({ x: 0, y: 0 });
@@ -490,26 +92,25 @@ export default function JewelryScene({
 
     // --- RENDERER ---
     const renderer = new THREE.WebGLRenderer({
-      antialias: !mobile, // Disable antialiasing on mobile for performance
+      antialias: !mobile,
       alpha: true,
       powerPreference: mobile ? "low-power" : "high-performance",
     });
     renderer.setSize(width, height);
-    // Lower pixel ratio on mobile for better performance
     const pixelRatio = mobile ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2);
     renderer.setPixelRatio(pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = mobile ? 1.0 : 1.1;
     renderer.setClearColor(0x000000, 0);
-    renderer.shadowMap.enabled = !mobile; // Disable shadows on mobile
+    renderer.shadowMap.enabled = !mobile;
     if (!mobile) {
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // --- LIGHTS (Simplified for mobile) ---
+    // --- LIGHTS ---
     const hemi = new THREE.HemisphereLight(0xffffff, 0x202020, mobile ? 0.5 : 0.6);
     scene.add(hemi);
 
@@ -535,10 +136,12 @@ export default function JewelryScene({
     scene.add(rimLight2);
 
     // --- GROUPS ---
+    // Main group for VERONA and SLOGAN (static, no rotation)
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
     mainGroupRef.current = mainGroup;
 
+    // Floating group for diamonds (interactive rotation)
     const floatingGroup = new THREE.Group();
     scene.add(floatingGroup);
     floatingGroupRef.current = floatingGroup;
@@ -557,7 +160,6 @@ export default function JewelryScene({
         scene.environment = envMap;
         envMapRef.current = envMap;
 
-        // Simplified diamond material for mobile
         const diamondMat = new THREE.MeshPhysicalMaterial({
           metalness: 0,
           roughness: 0,
@@ -593,7 +195,7 @@ export default function JewelryScene({
           });
         };
 
-        // --- LOAD SLOGAN MODEL ---
+        // --- LOAD SLOGAN MODEL (STATIC) ---
         loader.load(
           sloganPath,
           (gltf) => {
@@ -604,7 +206,6 @@ export default function JewelryScene({
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z) || 1;
-            // Slightly smaller on mobile
             const scaleFactor = (mobile ? 0.85 : 0.94) / maxDim;
             model.scale.setScalar(scaleFactor);
 
@@ -624,7 +225,7 @@ export default function JewelryScene({
           (err) => console.error("Error loading slogan model", err)
         );
 
-        // --- LOAD MAIN JEWELRY MODEL ---
+        // --- LOAD MAIN JEWELRY MODEL (STATIC) ---
         loader.load(
           modelPath,
           (gltf) => {
@@ -654,7 +255,7 @@ export default function JewelryScene({
           (err) => console.error("Error loading main model", err)
         );
 
-        // --- LOAD FLOATING DIAMONDS (Fewer on mobile) ---
+        // --- LOAD FLOATING DIAMONDS (INTERACTIVE) ---
         const count = Math.min(mobile ? Math.floor(floatingCount * 0.6) : floatingCount, floatingModels.length);
 
         for (let i = 0; i < count; i++) {
@@ -707,7 +308,7 @@ export default function JewelryScene({
       (err) => console.error("Error loading HDR env", err)
     );
 
-    // --- TOUCH INTERACTION ---
+    // --- TOUCH INTERACTION (Only affects floating diamonds) ---
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         touchStartRef.current = {
@@ -718,7 +319,7 @@ export default function JewelryScene({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1 && mainGroupRef.current) {
+      if (e.touches.length === 1 && floatingGroupRef.current) {
         e.preventDefault();
         const deltaX = e.touches[0].clientX - touchStartRef.current.x;
         const deltaY = e.touches[0].clientY - touchStartRef.current.y;
@@ -726,7 +327,6 @@ export default function JewelryScene({
         targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
         targetRotationRef.current.x = rotationRef.current.x + deltaY * 0.01;
         
-        // Clamp X rotation
         targetRotationRef.current.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, targetRotationRef.current.x));
       }
     };
@@ -735,7 +335,7 @@ export default function JewelryScene({
       rotationRef.current = { ...targetRotationRef.current };
     };
 
-    // Mouse interaction for desktop
+    // Mouse interaction for desktop (only affects floating diamonds)
     let isDragging = false;
     const handleMouseDown = (e: MouseEvent) => {
       isDragging = true;
@@ -743,7 +343,7 @@ export default function JewelryScene({
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging && mainGroupRef.current) {
+      if (isDragging && floatingGroupRef.current) {
         const deltaX = e.clientX - touchStartRef.current.x;
         const deltaY = e.clientY - touchStartRef.current.y;
 
@@ -772,12 +372,13 @@ export default function JewelryScene({
       const delta = clockRef.current.getDelta();
       const elapsed = clockRef.current.elapsedTime;
 
-      // Smooth rotation interpolation
-      if (mainGroupRef.current) {
-        mainGroupRef.current.rotation.y += (targetRotationRef.current.y - mainGroupRef.current.rotation.y) * 0.1;
-        mainGroupRef.current.rotation.x += (targetRotationRef.current.x - mainGroupRef.current.rotation.x) * 0.1;
+      // Smooth rotation interpolation for floating group only
+      if (floatingGroupRef.current) {
+        floatingGroupRef.current.rotation.y += (targetRotationRef.current.y - floatingGroupRef.current.rotation.y) * 0.1;
+        floatingGroupRef.current.rotation.x += (targetRotationRef.current.x - floatingGroupRef.current.rotation.x) * 0.1;
       }
 
+      // Animate floating diamonds
       const fg = floatingGroupRef.current;
       if (fg) {
         for (let i = 0; i < fg.children.length; i++) {
@@ -811,7 +412,6 @@ export default function JewelryScene({
       rendererRef.current.setSize(w, h);
       cameraRef.current.aspect = w / h;
       
-      // Adjust FOV on resize
       cameraRef.current.fov = newMobile ? 60 : 50;
       cameraRef.current.updateProjectionMatrix();
       
@@ -887,7 +487,7 @@ export default function JewelryScene({
         background: "transparent",
         overflow: "hidden",
         touchAction: "none",
-        cursor: isMobile ? "grab" : "grab",
+        cursor: "grab",
       }}
     />
   );
