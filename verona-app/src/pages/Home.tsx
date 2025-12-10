@@ -17,7 +17,7 @@ import SpiralJewelryScene from "../components/SpiralJewelryScene";
 // import FloatingJewelryScene from "../components/FloatingJewelryScene";
 // import SpreadingJewelryScene from "../components/SpreadingJewelryScene";
 // import FloatingDiamonds from "../components/FloatingDiamonds";
-// import MergedJewelryScene from "../components/MergedJewelryScene";x
+// import MergedJewelryScene from "../components/MergedJewelryScene";
 import Navbar from "../components/Navbar";
 
 
