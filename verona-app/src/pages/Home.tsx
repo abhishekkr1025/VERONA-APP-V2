@@ -9,7 +9,6 @@ const useAuth = () => ({
   isAuthenticated: false
 });
 
-// 3D SCENE COMPONENTS
 //Import your actual scene components
 import JewelryScene from "../components/JewelryScene";
 import CircularJewelryScene from "../components/CircularJewelryScene";
@@ -34,17 +33,15 @@ export default function Home() {
     SCROLL PROGRESS HANDLER
   -------------------------------------------------------- */
   useEffect(() => {
-  const handleScroll = () => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = Math.max(0, Math.min(1, window.scrollY / max));
-    setScrollProgress(progress);
-  };
+    const handleScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = window.scrollY / max;
+      setScrollProgress(progress);
+    };
 
-  // Use passive: true for better mobile performance
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
-
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   /* -------------------------------------------------------
     SECTION IN-VIEW DETECTION
@@ -160,7 +157,7 @@ export default function Home() {
       </div>
 
       {/* CONTENT OVERLAY */}
-      <div className="relative z-10 pointer-events-none">
+      <div className="relative z-10 ">
 
         {/* HERO SECTION */}
         <section

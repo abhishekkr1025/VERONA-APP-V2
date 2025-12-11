@@ -22,7 +22,7 @@ export default function CollectionPage() {
       name: "Verona Solitaire Ring",
       category: "rings",
       price: 12500,
-      image: "ring",
+      image: "/assets/images/shop_2.png",
       metal: "18K White Gold",
       stone: "1.5ct Diamond",
       description: "Classic solitaire with brilliant cut diamond",
@@ -32,7 +32,7 @@ export default function CollectionPage() {
       name: "Eternity Diamond Band",
       category: "rings",
       price: 8900,
-      image: "ring",
+      image: "/assets/images/shop_2.png",
       metal: "18K Yellow Gold",
       stone: "2ct Total Diamond",
       description: "Continuous diamond band symbolizing eternal love",
@@ -42,7 +42,7 @@ export default function CollectionPage() {
       name: "Venetian Pendant",
       category: "necklaces",
       price: 15800,
-      image: "necklace",
+      image: "/assets/images/pendant.png",
       metal: "Platinum",
       stone: "2ct Emerald",
       description: "Inspired by Venetian architecture",
@@ -52,7 +52,7 @@ export default function CollectionPage() {
       name: "Renaissance Earrings",
       category: "earrings",
       price: 9200,
-      image: "earring",
+      image: "/assets/images/earring.png",
       metal: "18K Rose Gold",
       stone: "1ct Sapphire",
       description: "Drop earrings with baroque influence",
@@ -62,7 +62,7 @@ export default function CollectionPage() {
       name: "Imperial Bracelet",
       category: "bracelets",
       price: 18500,
-      image: "bracelet",
+      image: "/assets/images/shop_2.png",
       metal: "18K White Gold",
       stone: "5ct Total Diamond",
       description: "Tennis bracelet with premium diamonds",
@@ -72,7 +72,7 @@ export default function CollectionPage() {
       name: "Luna Ring",
       category: "rings",
       price: 7500,
-      image: "ring",
+      image: "/assets/images/luna_ring.png",
       metal: "18K Yellow Gold",
       stone: "Moonstone",
       description: "Ethereal moonstone in modern setting",
@@ -82,7 +82,7 @@ export default function CollectionPage() {
       name: "Celestial Necklace",
       category: "necklaces",
       price: 22000,
-      image: "necklace",
+     image: "/assets/images/shop_2.png",
       metal: "Platinum",
       stone: "3ct Diamond",
       description: "Statement piece with cascading diamonds",
@@ -92,7 +92,7 @@ export default function CollectionPage() {
       name: "Aurora Studs",
       category: "earrings",
       price: 6800,
-      image: "earring",
+      image: "/assets/images/aurora.png",
       metal: "18K White Gold",
       stone: "0.75ct Diamond",
       description: "Classic diamond studs, perfect for daily wear",
@@ -102,7 +102,7 @@ export default function CollectionPage() {
       name: "Heritage Cuff",
       category: "bracelets",
       price: 14200,
-      image: "bracelet",
+      image: "/assets/images/heritage_cuff.png",
       metal: "18K Rose Gold",
       stone: "Ruby Accent",
       description: "Bold cuff with intricate detailing",
@@ -281,25 +281,32 @@ export default function CollectionPage() {
           {/* PRODUCTS GRID */}
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {sortedProducts.map(product => (
+              {sortedProducts.map((product) => (
                 <div key={product.id} className="group cursor-pointer">
                   {/* Product Image */}
                   <div className="relative aspect-square bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg mb-4 overflow-hidden border border-white/10 group-hover:border-white/30 transition-all duration-500">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-8xl text-white/10 group-hover:text-white/20 group-hover:scale-110 transition-all duration-500">
-                        {product.category === "rings" && "◇"}
-                        {product.category === "necklaces" && "○"}
-                        {product.category === "earrings" && "◆"}
-                        {product.category === "bracelets" && "◊"}
+                    {/* Actual Product Image */}
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      // Fallback to decorative symbols if no image
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-8xl text-white/10 group-hover:text-white/20 group-hover:scale-110 transition-all duration-500">
+                          {product.category === "rings" && "◇"}
+                          {product.category === "necklaces" && "○"}
+                          {product.category === "earrings" && "◆"}
+                          {product.category === "bracelets" && "◊"}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Quick Add Button */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <button
-                        // onClick={() => addToCart(product.id)}
-                        className="px-6 py-3 bg-white text-black text-sm tracking-wider rounded-full hover:bg-gray-200 transition transform translate-y-4 group-hover:translate-y-0"
-                      >
+                      <button className="px-6 py-3 bg-white text-black text-sm tracking-wider rounded-full hover:bg-gray-200 transition transform translate-y-4 group-hover:translate-y-0">
                         ADD TO CART
                       </button>
                     </div>

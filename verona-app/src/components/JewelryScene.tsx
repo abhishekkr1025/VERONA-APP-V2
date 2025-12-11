@@ -309,32 +309,40 @@ export default function JewelryScene({
     );
 
     // --- TOUCH INTERACTION (Only affects floating diamonds) ---
- const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        e.preventDefault();
-        touchStartRef.current = {
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY,
-        };
-      }
-    };
- const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 1 && floatingGroupRef.current) {
-        e.preventDefault();
-        e.stopPropagation();
-        const deltaX = e.touches[0].clientX - touchStartRef.current.x;
-        const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+ // Replace your touch event handlers with these:
 
-        targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
-        targetRotationRef.current.x = rotationRef.current.x + deltaY * 0.01;
-        
-        targetRotationRef.current.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, targetRotationRef.current.x));
-      }
+const handleTouchStart = (e: TouchEvent) => {
+  if (e.touches.length === 1) {
+    // DON'T preventDefault - let scroll work
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
     };
+  }
+};
 
-    const handleTouchEnd = () => {
-      rotationRef.current = { ...targetRotationRef.current };
-    };
+const handleTouchMove = (e: TouchEvent) => {
+  if (e.touches.length === 1 && floatingGroupRef.current) {
+    const deltaX = e.touches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+
+    // Only prevent default for horizontal gestures (to rotate diamonds)
+    // Allow vertical gestures for scrolling
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    
+    if (absX > absY && absX > 10) {
+      // Horizontal gesture - interact with diamonds
+      e.preventDefault();
+      targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
+    }
+    // If absY > absX, it's a vertical gesture - don't prevent, allow scroll
+  }
+};
+
+const handleTouchEnd = () => {
+  rotationRef.current = { ...targetRotationRef.current };
+};
 
     // Mouse interaction for desktop (only affects floating diamonds)
     let isDragging = false;
