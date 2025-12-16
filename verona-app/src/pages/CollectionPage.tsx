@@ -21,7 +21,7 @@ export default function CollectionPage() {
       id: 1,
       name: "Verona Solitaire Ring",
       category: "rings",
-      price: 12500,
+      price: 12500, 
       image: "/assets/images/shop_2.png",
       metal: "18K White Gold",
       stone: "1.5ct Diamond",
