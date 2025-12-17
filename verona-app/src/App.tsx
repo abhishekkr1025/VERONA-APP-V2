@@ -10,6 +10,17 @@ import AboutPage from "./pages/AboutPage";
 import ShopPage from "./pages/ShopPage";
 import ContactPage from "./pages/ContactPage";
 import CollectionPage from "./pages/CollectionPage";
+import { useEffect } from "react";
+import Lenis from "lenis";
+
+function LenisProvider() {
+  useEffect(() => {
+    const lenis = new Lenis({ autoRaf: true });
+    return () => lenis.destroy();
+  }, []);
+
+  return null;
+}
 
 function AppRouter() {
   return (
@@ -20,18 +31,10 @@ function AppRouter() {
       <Route path="/collectionPage" element={<CollectionPage />} />
       <Route path="/contact" element={<ContactPage />} />
 
-
-      
-      {/* <Route path="/gradient" element={<GradientBackgroundPage />} /> */}
-
       {/* Collections route */}
       <Route path="/collections" element={<CollectionPage />} />
       <Route path="/collections/:category" element={<CollectionPage />} />
 
-
-
-
-      
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   );
@@ -41,26 +44,13 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        
-          
-          <BrowserRouter>
-            <AppRouter />
-          </BrowserRouter>
-       
+        <BrowserRouter>
+         <LenisProvider />
+          <AppRouter />
+        </BrowserRouter>
       </ThemeProvider>
     </ErrorBoundary>
   );
 }
-
-// function App() {
-//   return (
-//     <div className="h-screen bg-black flex items-center justify-center">
-//       <h1 className="text-5xl font-bold text-pink-500">
-//         Tailwind Working 🎉
-//       </h1>
-//     </div>
-//   );
-// }
-
 
 export default App;

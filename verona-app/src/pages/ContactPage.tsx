@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { ChevronDown } from 'lucide-react';
 import { useRef } from "react";
+import Footer from "../components/Footer";
 
 
 export default function ContactPage() {
@@ -378,22 +379,8 @@ export default function ContactPage() {
 
                     </div>
                 </section>
-
-                {/* FOOTER */}
-                <footer className="border-t border-white/10 py-12 px-6">
-                    <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div className="text-2xl font-light tracking-widest">VERONA</div>
-                        <div className="flex gap-8 text-sm text-gray-400">
-                            <a href="/" className="hover:text-white transition">Home</a>
-                            <a href="/about" className="hover:text-white transition">About</a>
-                            <a href="/shop" className="hover:text-white transition">Shop</a>
-                            <a href="/contact" className="hover:text-white transition">Contact</a>
-                        </div>
-                        <div className="text-xs text-gray-600">
-                            © 2024 VERONA. All rights reserved.
-                        </div>
-                    </div>
-                </footer>
+ <Footer />
+                
             </div>
         </div>
     );

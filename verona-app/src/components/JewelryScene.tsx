@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 type JewelrySceneProps = {
   modelPath?: string;
@@ -12,26 +13,27 @@ type JewelrySceneProps = {
 };
 
 export default function JewelryScene({
-  modelPath = "/VERONA.glb",
-  sloganPath = "/SLOGAN.glb",
+  // point to the optimized outputs you created
+  modelPath = "/VERONA.opt.glb",
+  sloganPath = "/SLOGAN.opt.glb",
   floatingModels = [
-    "/2.glb",
-    "/3.glb",
-    "/4.glb",
-    "/5.glb",
-    "/6.glb",
-    "/7.glb",
-    "/8.glb",
-    "/9.glb",
-    "/10.glb",
-    "/11.glb",
-    "/12.glb",
-    "/13.glb",
-    "/14.glb",
-    "/15.glb",
-    "/16.glb",
-    "/17.glb",
-    "/18.glb",
+    "/2.opt.glb",
+    "/3.opt.glb",
+    "/4.opt.glb",
+    "/5.opt.glb",
+    "/6.opt.glb",
+    "/7.opt.glb",
+    "/8.opt.glb",
+    "/9.opt.glb",
+    "/10.opt.glb",
+    "/11.opt.glb",
+    "/12.opt.glb",
+    "/13.opt.glb",
+    "/14.opt.glb",
+    "/15.opt.glb",
+    "/16.opt.glb",
+    "/17.opt.glb",
+    "/18.opt.glb",
   ],
   envPath = "/venice.hdr",
   floatingCount = 11,
@@ -58,10 +60,12 @@ export default function JewelryScene({
   const targetRotationRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Detect mobile device
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || 
-                     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const mobile =
+        window.innerWidth < 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
       setIsMobile(mobile);
       return mobile;
     };
@@ -80,11 +84,9 @@ export default function JewelryScene({
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // Adjust FOV for mobile (wider FOV to see more on small screens)
     const fov = mobile ? 60 : 50;
     const camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 500);
-    
-    // Adjust camera position for mobile (pull back a bit)
+
     const cameraZ = mobile ? 3.2 : 2.5;
     const cameraY = mobile ? 0.3 : 0.5;
     camera.position.set(0, cameraY, cameraZ);
@@ -97,16 +99,17 @@ export default function JewelryScene({
       powerPreference: mobile ? "low-power" : "high-performance",
     });
     renderer.setSize(width, height);
-    const pixelRatio = mobile ? Math.min(window.devicePixelRatio, 1.5) : Math.min(window.devicePixelRatio, 2);
+    const pixelRatio = mobile
+      ? Math.min(window.devicePixelRatio, 1.5)
+      : Math.min(window.devicePixelRatio, 2);
     renderer.setPixelRatio(pixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = mobile ? 1.0 : 1.1;
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = !mobile;
-    if (!mobile) {
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
+    if (!mobile) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -136,27 +139,28 @@ export default function JewelryScene({
     scene.add(rimLight2);
 
     // --- GROUPS ---
-    // Main group for VERONA and SLOGAN (static, no rotation)
     const mainGroup = new THREE.Group();
     scene.add(mainGroup);
     mainGroupRef.current = mainGroup;
 
-    // Floating group for diamonds (interactive rotation)
     const floatingGroup = new THREE.Group();
     scene.add(floatingGroup);
     floatingGroupRef.current = floatingGroup;
 
     // --- LOADERS & ENV MAP ---
     const loader = new GLTFLoader();
-    const rgbeLoader = new HDRLoader();
+    // Required for glb files compressed with EXT_meshopt_compression. [web:56]
+    loader.setMeshoptDecoder(MeshoptDecoder); // [web:56]
+
+    const rgbeLoader = new RGBELoader();
     const pmremGen = new THREE.PMREMGenerator(renderer);
     pmremGen.compileEquirectangularShader();
 
     rgbeLoader.load(
       envPath,
-      (hdr) => {
-        const envMap = pmremGen.fromEquirectangular(hdr).texture;
-        hdr.dispose();
+      (hdrTex) => {
+        const envMap = pmremGen.fromEquirectangular(hdrTex).texture;
+        hdrTex.dispose();
         scene.environment = envMap;
         envMapRef.current = envMap;
 
@@ -195,29 +199,32 @@ export default function JewelryScene({
           });
         };
 
+        const normalizeAndCenter = (model: THREE.Object3D) => {
+          model.position.set(0, 0, 0);
+          model.rotation.set(0, 0, 0);
+
+          const box = new THREE.Box3().setFromObject(model);
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z) || 1;
+          const scaleFactor = (mobile ? 0.85 : 0.94) / maxDim;
+          model.scale.setScalar(scaleFactor);
+
+          box.setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+
+          model.position.x -= center.x;
+          model.position.y -= center.y + 0.05;
+          model.position.z -= center.z;
+
+          model.rotation.x = Math.PI / 2;
+        };
+
         // --- LOAD SLOGAN MODEL (STATIC) ---
         loader.load(
           sloganPath,
           (gltf) => {
             const model = gltf.scene;
-            model.position.set(0, 0, 0);
-            model.rotation.set(0, 0, 0);
-
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z) || 1;
-            const scaleFactor = (mobile ? 0.85 : 0.94) / maxDim;
-            model.scale.setScalar(scaleFactor);
-
-            box.setFromObject(model);
-            const center = box.getCenter(new THREE.Vector3());
-
-            model.position.x -= center.x;
-            model.position.y -= center.y + 0.05;
-            model.position.z -= center.z;
-
-            model.rotation.x = Math.PI / 2;
-
+            normalizeAndCenter(model);
             applyDiamondMaterial(model, true);
             mainGroup.add(model);
           },
@@ -230,24 +237,7 @@ export default function JewelryScene({
           modelPath,
           (gltf) => {
             const model = gltf.scene;
-            model.position.set(0, 0, 0);
-            model.rotation.set(0, 0, 0);
-
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const maxDim = Math.max(size.x, size.y, size.z) || 1;
-            const scaleFactor = (mobile ? 0.85 : 0.94) / maxDim;
-            model.scale.setScalar(scaleFactor);
-
-            box.setFromObject(model);
-            const center = box.getCenter(new THREE.Vector3());
-
-            model.position.x -= center.x;
-            model.position.y -= center.y + 0.05;
-            model.position.z -= center.z;
-
-            model.rotation.x = Math.PI / 2;
-
+            normalizeAndCenter(model);
             applyDiamondMaterial(model, true);
             mainGroup.add(model);
           },
@@ -256,7 +246,10 @@ export default function JewelryScene({
         );
 
         // --- LOAD FLOATING DIAMONDS (INTERACTIVE) ---
-        const count = Math.min(mobile ? Math.floor(floatingCount * 0.6) : floatingCount, floatingModels.length);
+        const count = Math.min(
+          mobile ? Math.floor(floatingCount * 0.6) : floatingCount,
+          floatingModels.length
+        );
 
         for (let i = 0; i < count; i++) {
           const randomModel =
@@ -270,6 +263,7 @@ export default function JewelryScene({
               const box = new THREE.Box3().setFromObject(model);
               const size = box.getSize(new THREE.Vector3());
               const maxDim = Math.max(size.x, size.y, size.z) || 1;
+
               const targetSize = THREE.MathUtils.randFloat(
                 mobile ? 0.06 : 0.08,
                 mobile ? 0.12 : 0.16
@@ -283,11 +277,7 @@ export default function JewelryScene({
               const baseY = THREE.MathUtils.randFloat(-0.2, 0.7);
               const baseZ = Math.sin(angle) * radius * 0.5;
 
-              model.position.set(
-                Math.cos(angle) * radius,
-                baseY,
-                baseZ
-              );
+              model.position.set(Math.cos(angle) * radius, baseY, baseZ);
 
               (model as any)._floatBaseY = baseY;
               (model as any)._floatSpeed = THREE.MathUtils.randFloat(0.5, 1.1);
@@ -308,43 +298,36 @@ export default function JewelryScene({
       (err) => console.error("Error loading HDR env", err)
     );
 
-    // --- TOUCH INTERACTION (Only affects floating diamonds) ---
- // Replace your touch event handlers with these:
-
-const handleTouchStart = (e: TouchEvent) => {
-  if (e.touches.length === 1) {
-    // DON'T preventDefault - let scroll work
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
+    // --- TOUCH INTERACTION ---
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartRef.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
+      }
     };
-  }
-};
 
-const handleTouchMove = (e: TouchEvent) => {
-  if (e.touches.length === 1 && floatingGroupRef.current) {
-    const deltaX = e.touches[0].clientX - touchStartRef.current.x;
-    const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1 && floatingGroupRef.current) {
+        const deltaX = e.touches[0].clientX - touchStartRef.current.x;
+        const deltaY = e.touches[0].clientY - touchStartRef.current.y;
 
-    // Only prevent default for horizontal gestures (to rotate diamonds)
-    // Allow vertical gestures for scrolling
-    const absX = Math.abs(deltaX);
-    const absY = Math.abs(deltaY);
-    
-    if (absX > absY && absX > 10) {
-      // Horizontal gesture - interact with diamonds
-      e.preventDefault();
-      targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
-    }
-    // If absY > absX, it's a vertical gesture - don't prevent, allow scroll
-  }
-};
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
 
-const handleTouchEnd = () => {
-  rotationRef.current = { ...targetRotationRef.current };
-};
+        if (absX > absY && absX > 10) {
+          e.preventDefault();
+          targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
+        }
+      }
+    };
 
-    // Mouse interaction for desktop (only affects floating diamonds)
+    const handleTouchEnd = () => {
+      rotationRef.current = { ...targetRotationRef.current };
+    };
+
+    // Mouse interaction
     let isDragging = false;
     const handleMouseDown = (e: MouseEvent) => {
       isDragging = true;
@@ -358,8 +341,11 @@ const handleTouchEnd = () => {
 
         targetRotationRef.current.y = rotationRef.current.y + deltaX * 0.01;
         targetRotationRef.current.x = rotationRef.current.x + deltaY * 0.01;
-        
-        targetRotationRef.current.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, targetRotationRef.current.x));
+
+        targetRotationRef.current.x = Math.max(
+          -Math.PI / 4,
+          Math.min(Math.PI / 4, targetRotationRef.current.x)
+        );
       }
     };
 
@@ -371,6 +357,7 @@ const handleTouchEnd = () => {
     container.addEventListener("touchstart", handleTouchStart, { passive: false });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     container.addEventListener("touchend", handleTouchEnd);
+
     container.addEventListener("mousedown", handleMouseDown);
     container.addEventListener("mousemove", handleMouseMove);
     container.addEventListener("mouseup", handleMouseUp);
@@ -381,13 +368,13 @@ const handleTouchEnd = () => {
       const delta = clockRef.current.getDelta();
       const elapsed = clockRef.current.elapsedTime;
 
-      // Smooth rotation interpolation for floating group only
       if (floatingGroupRef.current) {
-        floatingGroupRef.current.rotation.y += (targetRotationRef.current.y - floatingGroupRef.current.rotation.y) * 0.1;
-        floatingGroupRef.current.rotation.x += (targetRotationRef.current.x - floatingGroupRef.current.rotation.x) * 0.1;
+        floatingGroupRef.current.rotation.y +=
+          (targetRotationRef.current.y - floatingGroupRef.current.rotation.y) * 0.1;
+        floatingGroupRef.current.rotation.x +=
+          (targetRotationRef.current.x - floatingGroupRef.current.rotation.x) * 0.1;
       }
 
-      // Animate floating diamonds
       const fg = floatingGroupRef.current;
       if (fg) {
         for (let i = 0; i < fg.children.length; i++) {
@@ -420,10 +407,10 @@ const handleTouchEnd = () => {
 
       rendererRef.current.setSize(w, h);
       cameraRef.current.aspect = w / h;
-      
+
       cameraRef.current.fov = newMobile ? 60 : 50;
       cameraRef.current.updateProjectionMatrix();
-      
+
       checkMobile();
     };
 
@@ -437,46 +424,33 @@ const handleTouchEnd = () => {
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchmove", handleTouchMove);
       container.removeEventListener("touchend", handleTouchEnd);
+
       container.removeEventListener("mousedown", handleMouseDown);
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseup", handleMouseUp);
       container.removeEventListener("mouseleave", handleMouseUp);
 
-      if (animationIdRef.current !== null) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
+      if (animationIdRef.current !== null) cancelAnimationFrame(animationIdRef.current);
 
       if (sceneRef.current) {
         sceneRef.current.traverse((obj) => {
           const mesh = obj as THREE.Mesh;
           if (mesh.isMesh) {
-            if (mesh.geometry) mesh.geometry.dispose();
-            if (Array.isArray(mesh.material)) {
-              mesh.material.forEach((m) => m.dispose());
-            } else if (mesh.material) {
-              mesh.material.dispose();
-            }
+            mesh.geometry?.dispose();
+            if (Array.isArray(mesh.material)) mesh.material.forEach((m) => m.dispose());
+            else mesh.material?.dispose();
           }
         });
       }
 
-      if (diamondMaterialRef.current) {
-        diamondMaterialRef.current.dispose();
-      }
-
-      if (envMapRef.current) {
-        envMapRef.current.dispose();
-      }
+      diamondMaterialRef.current?.dispose();
+      envMapRef.current?.dispose();
 
       pmremGen.dispose();
 
       if (rendererRef.current) {
         rendererRef.current.dispose();
-        if (rendererRef.current.domElement.parentNode) {
-          rendererRef.current.domElement.parentNode.removeChild(
-            rendererRef.current.domElement
-          );
-        }
+        rendererRef.current.domElement.parentNode?.removeChild(rendererRef.current.domElement);
       }
 
       sceneRef.current = null;

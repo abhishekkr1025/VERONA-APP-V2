@@ -119,7 +119,7 @@ export default function Home() {
             pointerEvents: activeSection === 1 ? 'auto' : 'none'
           }}
         >
-          <CircularJewelryScene />
+          {/* <CircularJewelryScene /> */}
         </div>
 
         {/* Scene 2 - Spiral */}
@@ -130,7 +130,7 @@ export default function Home() {
             pointerEvents: activeSection === 2 ? 'auto' : 'none'
           }}
         >
-          <SpiralJewelryScene />
+          {/* <SpiralJewelryScene /> */}
         </div>
 
         {/* Scene 3 - Floating */}

@@ -3,14 +3,24 @@
 
 
 /* Optional: your own globals */
-html, body, #root {
+/* html, body, #root {
   height: 100%;
 } 
 html, body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
+} */
+ html, body {
+  height: auto;
+  min-height: 100%;
 }
+
+#root {
+  min-height: 100%;
+  /* or min-height: 100vh; */
+}
+
 
 body {
   position: relative;
